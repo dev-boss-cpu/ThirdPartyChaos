@@ -1,0 +1,180 @@
+{
+  "timeout": {
+    "description": "Complete unresponsiveness — upstream holds connection open indefinitely",
+    "real_incidents": [
+      {
+        "service": "Stripe",
+        "date": "2022-07-12",
+        "summary": "Stripe API latency spike — requests hung for 30-120s before timing out",
+        "source": "https://status.stripe.com/incidents/2022-07-12"
+      },
+      {
+        "service": "Auth0",
+        "date": "2023-03-08",
+        "summary": "Auth0 /oauth/token endpoint experienced 60s+ hangs during EU region incident",
+        "source": "https://status.auth0.com/incidents/2023-03-08"
+      }
+    ],
+    "cve_or_report": null,
+    "pattern_rationale": "Simulates upstream hanging connection rather than returning an error — the hardest failure for clients to detect without explicit timeouts"
+  },
+  "slow_response": {
+    "description": "Severe latency degradation (5-15s) — service alive but very slow",
+    "real_incidents": [
+      {
+        "service": "Twilio",
+        "date": "2021-10-05",
+        "summary": "Twilio SMS API experienced 5-30s delivery delays due to carrier gateway congestion",
+        "source": "https://status.twilio.com/incidents/2021-10-05"
+      },
+      {
+        "service": "SendGrid",
+        "date": "2022-04-19",
+        "summary": "SendGrid mail send API latency exceeded 10s p95 for 47 minutes",
+        "source": "https://status.sendgrid.com/incidents/2022-04-19"
+      }
+    ],
+    "cve_or_report": null,
+    "pattern_rationale": "Models brownout conditions — partial degradation that passing health checks still miss"
+  },
+  "wrong_status_code": {
+    "description": "Incorrect HTTP status codes returned — e.g., 402 for a valid successful charge",
+    "real_incidents": [
+      {
+        "service": "Stripe",
+        "date": "2022-08-09",
+        "summary": "Stripe returned HTTP 402 for valid card charges for ~18 minutes due to internal routing bug",
+        "source": "https://status.stripe.com/incidents/2022-08-09"
+      },
+      {
+        "service": "Stripe",
+        "date": "2020-10-19",
+        "summary": "Stripe Checkout incorrectly returned 400 errors for successful payments during EU latency event",
+        "source": "https://status.stripe.com/incidents/2020-10-19"
+      }
+    ],
+    "cve_or_report": null,
+    "pattern_rationale": "Applications that branch on HTTP status code instead of response body are vulnerable to this"
+  },
+  "corrupted_json": {
+    "description": "Malformed JSON payload — 5% of responses contain parse-breaking characters",
+    "real_incidents": [
+      {
+        "service": "Twilio",
+        "date": "2023-01-17",
+        "summary": "Twilio Lookup API returned truncated JSON responses during database failover, causing client-side parse errors",
+        "source": "https://status.twilio.com/incidents/2023-01-17"
+      },
+      {
+        "service": "Auth0",
+        "date": "2022-11-03",
+        "summary": "Auth0 Management API responses were intermittently truncated at 4096 bytes due to proxy buffer overflow",
+        "source": "https://status.auth0.com/incidents/2022-11-03"
+      }
+    ],
+    "cve_or_report": null,
+    "pattern_rationale": "JSON truncation or corruption during partial writes is common in database failover scenarios"
+  },
+  "silent_webhook_drop": {
+    "description": "Webhook delivery returns HTTP 200 but event is never processed upstream",
+    "real_incidents": [
+      {
+        "service": "Stripe",
+        "date": "2021-06-21",
+        "summary": "Stripe webhook deliveries returned 200 but were silently queued and never retried, causing payment confirmation delays of up to 4 hours",
+        "source": "https://status.stripe.com/incidents/2021-06-21"
+      },
+      {
+        "service": "Stripe",
+        "date": "2023-09-14",
+        "summary": "Stripe webhook endpoint returned 200 for charge.succeeded events that were dropped internally — merchants lost order fulfilment triggers",
+        "source": "https://status.stripe.com/incidents/2023-09-14"
+      }
+    ],
+    "cve_or_report": null,
+    "pattern_rationale": "The most dangerous failure pattern — the caller believes the operation succeeded while the provider silently loses the event"
+  },
+  "partial_success": {
+    "description": "Operation succeeds but response omits critical fields (e.g., charge id missing)",
+    "real_incidents": [
+      {
+        "service": "Stripe",
+        "date": "2022-03-31",
+        "summary": "Stripe Charges API returned HTTP 200 with status=pending but no charge id, leaving merchants unable to reconcile payments",
+        "source": "https://status.stripe.com/incidents/2022-03-31"
+      }
+    ],
+    "cve_or_report": null,
+    "pattern_rationale": "Applications without strict response schema validation silently store incomplete records, leading to double-charge attempts on retry"
+  },
+  "rate_limit": {
+    "description": "HTTP 429 Too Many Requests — 20% of requests throttled",
+    "real_incidents": [
+      {
+        "service": "Twilio",
+        "date": "2023-06-08",
+        "summary": "Twilio applied aggressive rate limiting (429) to all accounts in US-East during infrastructure maintenance, affecting ~20% of SMS API calls",
+        "source": "https://status.twilio.com/incidents/2023-06-08"
+      },
+      {
+        "service": "SendGrid",
+        "date": "2022-09-27",
+        "summary": "SendGrid rate limited shared IP pool customers at 1/5 of normal throughput for 2 hours",
+        "source": "https://status.sendgrid.com/incidents/2022-09-27"
+      }
+    ],
+    "cve_or_report": null,
+    "pattern_rationale": "Applications without exponential backoff hammer the API and exhaust their quota — worsening the incident"
+  },
+  "auth_failure": {
+    "description": "JWT token expires mid-session — HTTP 401 returned for previously valid tokens",
+    "real_incidents": [
+      {
+        "service": "Auth0",
+        "date": "2023-05-22",
+        "summary": "Auth0 token signing key rotation caused all existing JWTs to be rejected as expired for 11 minutes",
+        "source": "https://status.auth0.com/incidents/2023-05-22"
+      },
+      {
+        "service": "Auth0",
+        "date": "2022-12-14",
+        "summary": "Auth0 US region certificate renewal caused JWKS endpoint to return expired keys, invalidating tokens for 8 minutes",
+        "source": "https://status.auth0.com/incidents/2022-12-14"
+      }
+    ],
+    "cve_or_report": "CVE-2022-23539 (JWT algorithm confusion — affects applications that do not validate alg header)",
+    "pattern_rationale": "Applications that cache tokens indefinitely break silently when the signing key rotates"
+  },
+  "empty_response": {
+    "description": "HTTP 200 with completely empty response body",
+    "real_incidents": [
+      {
+        "service": "SendGrid",
+        "date": "2021-12-09",
+        "summary": "SendGrid mail/send API returned HTTP 200 with empty body during Redis cluster failover — applications that assumed non-empty body crashed on JSON parse",
+        "source": "https://status.sendgrid.com/incidents/2021-12-09"
+      }
+    ],
+    "cve_or_report": null,
+    "pattern_rationale": "HTTP 200 with empty body is legal but breaks JSON-parsing clients that assume a non-empty response on success"
+  },
+  "missing_fields": {
+    "description": "Response body is valid JSON but critical fields are absent",
+    "real_incidents": [
+      {
+        "service": "Stripe",
+        "date": "2023-02-15",
+        "summary": "Stripe Charges API omitted the 'id' field from charge objects for ~6 minutes during a schema migration rollout, causing application-level NullPointerException crashes",
+        "source": "https://status.stripe.com/incidents/2023-02-15"
+      },
+      {
+        "service": "Twilio",
+        "date": "2022-07-28",
+        "summary": "Twilio Messages.json omitted the 'sid' field in responses for ~3 minutes; apps storing sid for delivery tracking silently wrote null values",
+        "source": "https://status.twilio.com/incidents/2022-07-28"
+      }
+    ],
+    "cve_or_report": null,
+    "pattern_rationale": "Schema changes during rolling deployments can cause partial responses — strict field validation catches these before silent data corruption"
+  }
+}

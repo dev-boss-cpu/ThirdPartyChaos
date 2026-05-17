@@ -1,0 +1,56 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# pytest cache
+.pytest_cache/
+.cache/
+
+# Logs (generated at runtime — not part of source)
+module1/logs/intercept.jsonl
+module1/logs/chaos_run.jsonl
+module1/logs/repair_history.jsonl
+
+# Keep fault_state.json template but not live state
+module1/logs/fault_state.json
+
+# Generated output files (produced by running the demo)
+evidence_report.json
+sha256sums.txt
+volatility_output.txt
+repair.patch
+healer_state.json
+report.html
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Windows PowerShell artifacts
+$*
+
+# mitmproxy generated certificates (stored in home dir, not project)
+.mitmproxy/
+
+# Ollama / AI temp files
+*.gguf
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/

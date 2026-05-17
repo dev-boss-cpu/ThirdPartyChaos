@@ -1,0 +1,94 @@
+{
+  "generated_at": "2026-05-16T14:42:28.443139+00:00",
+  "measurements": [
+    {
+      "metric": "proxy_round_trip_ms",
+      "n": 50,
+      "mean_ms": 62.4,
+      "median_ms": 58.1,
+      "stdev_ms": 21.3,
+      "p95_ms": 98.7,
+      "min_ms": 41.2,
+      "max_ms": 151.9
+    },
+    {
+      "metric": "memory_footprint",
+      "process_rss_mb": {
+        "mitmdump": 91.2
+      }
+    },
+    {
+      "metric": "log_growth",
+      "requests": 100,
+      "bytes_added": 45600,
+      "bytes_per_request": 456.0
+    },
+    {
+      "metric": "fault_detection_ms",
+      "fault": "corrupted_json",
+      "n": 3,
+      "mean_ms": 29.1,
+      "min_ms": 22.4,
+      "max_ms": 38.7
+    },
+    {
+      "metric": "mttr_ms",
+      "fault": "corrupted_json",
+      "recovered": true,
+      "mttr_ms": 1320.8,
+      "mttr_s": 1.32
+    },
+    {
+      "metric": "fault_detection_ms",
+      "fault": "rate_limit",
+      "n": 3,
+      "mean_ms": 34.2,
+      "min_ms": 26.1,
+      "max_ms": 45.8
+    },
+    {
+      "metric": "mttr_ms",
+      "fault": "rate_limit",
+      "recovered": true,
+      "mttr_ms": 2940.1,
+      "mttr_s": 2.94
+    },
+    {
+      "metric": "fault_detection_ms",
+      "fault": "wrong_status_code",
+      "n": 3,
+      "mean_ms": 18.6,
+      "min_ms": 14.2,
+      "max_ms": 24.3
+    },
+    {
+      "metric": "mttr_ms",
+      "fault": "wrong_status_code",
+      "recovered": true,
+      "mttr_ms": 890.4,
+      "mttr_s": 0.89
+    },
+    {
+      "metric": "fault_detection_ms",
+      "fault": "auth_failure",
+      "n": 3,
+      "mean_ms": 22.8,
+      "min_ms": 17.6,
+      "max_ms": 31.4
+    },
+    {
+      "metric": "mttr_ms",
+      "fault": "auth_failure",
+      "recovered": true,
+      "mttr_ms": 1150.7,
+      "mttr_s": 1.15
+    },
+    {
+      "metric": "ai_repair_generation_s",
+      "elapsed_s": 52.4,
+      "patch_lines": 42,
+      "dry_run_ok": true,
+      "status": "ok"
+    }
+  ]
+}

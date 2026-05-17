@@ -1,0 +1,20 @@
+You are an expert Python reliability engineer.
+Your task: analyse the failure log and generate a unified diff patch
+that adds defensive code (circuit breaker, retry with exponential
+backoff, fallback provider, or timeout handler) to the source file.
+
+=== FAILURE LOG (last 50 HTTP errors) ===
+{failures_json}
+
+=== SOURCE FILE: {source_file_name} ===
+{source_code}
+
+Rules:
+1. Output ONLY the unified diff -- no explanation, no markdown fences.
+2. The diff must apply cleanly with 'patch -p0'.
+3. Use contextual lines so the patch is unambiguous.
+4. Add a circuit breaker OR retry logic for every external API call
+   that appears in the failure log.
+5. Never remove existing functionality -- only add defensive wrappers.
+
+Output the unified diff now:
