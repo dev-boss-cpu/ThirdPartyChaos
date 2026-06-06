@@ -61,14 +61,49 @@ All fault patterns are sourced from real documented SaaS incidents (see `inciden
 - Python 3.11+
 - [Ollama](https://ollama.com/) with `llama3.1:8b` pulled
 - Windows 10/11 or Fedora Linux
+- [Autopsy](https://www.autopsy.com/) *(optional — for forensic disk image analysis)*
+- [LiME](https://github.com/504ensicsLabs/LiME) *(optional, Linux only — for live memory acquisition)*
 
 ---
 
-## Installation
+## Docker (Recommended — Zero Setup)
+
+Everything — Python, Ollama, all services — is bundled. Your friend needs only Docker Desktop installed.
+
+```bash
+# Clone
+git clone https://github.com/dev-boss-cpu/ThirdPartyChaos.git
+cd ThirdPartyChaos
+
+# Start everything (downloads llama3.1:8b ~4.9 GB on first run — one time only)
+docker compose up --build
+
+# Once all services are healthy, run the demo in a second terminal
+docker compose exec app python -X utf8 live_demo.py
+```
+
+That's it. All 5 services start automatically inside the container.
+
+**NVIDIA GPU** — uncomment the `deploy` block in `docker-compose.yml` and install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html).
+
+**Inject faults manually from the host:**
+```bash
+curl -X POST http://localhost:9000/chaos/set/wrong_status_code
+curl -X POST http://localhost:9000/chaos/clear
+```
+
+**Stop everything:**
+```bash
+docker compose down
+```
+
+---
+
+## Installation (Manual)
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/ThirdPartyChaos.git
+git clone https://github.com/dev-boss-cpu/ThirdPartyChaos.git
 cd ThirdPartyChaos
 
 # Create virtual environment
@@ -91,39 +126,102 @@ ollama pull llama3.1:8b
 
 ## Running the Full Demo
 
-Open **7 terminals** and start services in this exact order:
+Open **7 terminals** and start services in this **exact order**. Run the reset command every time before starting.
+
+### Reset state (every run)
+
+**Windows:**
+```cmd
+echo {} > module1\logs\fault_state.json
+```
+**Linux:**
+```bash
+echo '{}' > module1/logs/fault_state.json
+```
+
+---
 
 **Terminal 1 — Ollama**
 ```bash
 ollama serve
 ```
+*(If it says "Ollama is already running" — that's fine, move on.)*
+
+---
 
 **Terminal 2 — Mock SaaS (:8090)**
+
+Windows:
+```cmd
+cd ThirdPartyChaos\sample-app
+..\.venv\Scripts\python.exe -m uvicorn mock_saas:app --port 8090
+```
+Linux:
 ```bash
 cd sample-app
-source ../.venv/bin/activate        # Linux
+source ../.venv/bin/activate
 uvicorn mock_saas:app --port 8090
 ```
+Wait for: `Uvicorn running on http://127.0.0.1:8090`
+
+---
 
 **Terminal 3 — Proxy (:8080)**
+
+Windows:
+```cmd
+.venv\Scripts\python.exe module1\start_proxy.py --port 8080
+```
+Linux:
 ```bash
 source .venv/bin/activate
 python module1/start_proxy.py --port 8080
 ```
+Wait for: `Proxy listening on port 8080`
+*(You will see `Redis not available — using file-based state store` — this is normal.)*
+
+---
 
 **Terminal 4 — Control API (:9000)**
+
+Windows:
+```cmd
+.venv\Scripts\python.exe -m uvicorn module2.control_api:app --port 9000
+```
+Linux:
 ```bash
 source .venv/bin/activate
 uvicorn module2.control_api:app --port 9000
 ```
+Wait for: `Uvicorn running on http://127.0.0.1:9000`
+
+---
 
 **Terminal 5 — Self-Healer**
+
+Windows:
+```cmd
+.venv\Scripts\python.exe module3\healer.py
+```
+Linux:
 ```bash
 source .venv/bin/activate
 python module3/healer.py
 ```
+Wait for: `[Healer] Monitoring started for services:`
+
+---
 
 **Terminal 6 — Sample App (:3000)**
+
+Windows:
+```cmd
+cd ThirdPartyChaos\sample-app
+set HTTP_PROXY=http://localhost:8080
+set MOCK_SAAS_URL=http://localhost:8090
+..\.venv\Scripts\python.exe -m uvicorn main:app --port 3000
+```
+Linux:
 ```bash
 cd sample-app
 source ../.venv/bin/activate
@@ -131,14 +229,23 @@ export HTTP_PROXY=http://localhost:8080
 export MOCK_SAAS_URL=http://localhost:8090
 uvicorn main:app --port 3000
 ```
+Wait for: `Uvicorn running on http://127.0.0.1:3000`
+
+---
 
 **Terminal 7 — Run Demo**
+
+Windows:
+```cmd
+.venv\Scripts\python.exe -X utf8 live_demo.py
+```
+Linux:
 ```bash
-echo '{}' > module1/logs/fault_state.json
+source .venv/bin/activate
 python -X utf8 live_demo.py
 ```
 
-> **Windows users:** Replace `source .venv/bin/activate` with `.venv\Scripts\activate.bat` and `export VAR=value` with `set VAR=value`
+> **Step 6 (AI Repair) will pause for ~60 seconds with no output — this is normal. Ollama is thinking. Do not close anything.**
 
 ---
 
@@ -146,15 +253,15 @@ python -X utf8 live_demo.py
 
 The `live_demo.py` script runs 9 automated steps:
 
-1. **Health Check** — verifies all services are reachable
-2. **Baseline Traffic** — 4 requests with no fault active
-3. **Fault Injection** — cycles all 8 active faults, 3 requests each
+1. **Health Check** — verifies all 3 services return HTTP 200
+2. **Baseline Traffic** — 4 clean requests with no fault active
+3. **Fault Injection** — cycles 8 of the 10 fault patterns, 3 requests each (`timeout` and `slow_response` are excluded from the demo loop as they stall the pipeline)
 4. **Circuit Breaker Trip** — trips Stripe CB through full CLOSED→OPEN→HALF\_OPEN→CLOSED cycle
 5. **Healer Events** — shows fallback activations from `healer_state.json`
-6. **AI Repair** — Ollama generates a unified diff patch from the failure log
-7. **pytest Suite** — reruns chaos tests against the live stack
+6. **AI Repair** — Ollama (`llama3.1:8b`) generates a unified diff patch from the failure log — wait ~60 seconds on GPU
+7. **pytest Suite** — 11 chaos tests run against the live stack
 8. **Forensic Report** — builds SHA-256-anchored `evidence_report.json`
-9. **Deliverables Check** — confirms all output files exist
+9. **Deliverables Check** — confirms all output files are present
 
 ---
 

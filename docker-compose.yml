@@ -1,0 +1,61 @@
+services:
+
+  # ── Ollama AI Engine ──────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: tpc-ollama
+    volumes:
+      - ollama_data:/root/.ollama   # models persist between restarts
+    ports:
+      - "11434:11434"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 15s
+    # ── NVIDIA GPU support ────────────────────────────────────────────────
+    # Uncomment the block below if your system has an NVIDIA GPU and the
+    # NVIDIA Container Toolkit is installed (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # ── Pull llama3.1:8b once (skipped if already cached in the volume) ───────
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: tpc-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["ollama", "pull", "llama3.1:8b"]
+    restart: "no"
+
+  # ── All Python services (proxy, mock SaaS, control API, healer, app) ─────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tpc-app
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    ports:
+      - "3000:3000"    # Sample App
+      - "8080:8080"    # Proxy Interceptor
+      - "8090:8090"    # Mock SaaS
+      - "9000:9000"    # Control API
+    volumes:
+      - app_logs:/app/module1/logs   # persist intercept + chaos logs
+
+volumes:
+  ollama_data:   # stores downloaded Ollama models (~4.9 GB)
+  app_logs:

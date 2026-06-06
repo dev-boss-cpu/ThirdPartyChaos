@@ -171,7 +171,9 @@ def _fault_timeout(flow: http.HTTPFlow) -> Optional[http.Response]:
 
 
 def _fault_slow_response(flow: http.HTTPFlow) -> Optional[http.Response]:
-    """Inject 5-15 s of artificial latency before passing the response."""
+    """Inject 5-15 s of artificial latency on 30 % of requests (brownout pattern)."""
+    if random.random() > 0.30:
+        return None
     delay = random.uniform(5.0, 15.0)
     _log_injection("slow_response", flow.request.pretty_url)
     flow.metadata["tpc_injected"] = True

@@ -1,0 +1,36 @@
+# Virtual environments
+.venv/
+sample-app/.venv/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Generated output files (recreated by demo)
+repair.patch
+evidence_report.json
+healer_state.json
+sha256sums.txt
+report.html
+module1/logs/intercept.jsonl
+module1/logs/chaos_run.jsonl
+module1/logs/repair_history.jsonl
+
+# Windows background process logs
+logs_*.txt
+
+# Windows helper scripts
+start_sampleapp.ps1
+
+# Git
+.git/
+.gitignore
+
+# Docker files (no need to include in image)
+Dockerfile
+docker-compose.yml
+.dockerignore
