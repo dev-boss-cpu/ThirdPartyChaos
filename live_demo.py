@@ -351,7 +351,7 @@ def step_ai_repair():
 
     import subprocess, pathlib, sys
 
-    venv_py = pathlib.Path(".venv/Scripts/python.exe")
+    venv_py = pathlib.Path(sys.executable)
     source  = "sample-app/main.py"
 
     info("Calling ai_repair.py — this invokes Ollama to generate a unified diff patch...")
@@ -407,7 +407,7 @@ def step_pytest():
 
     import subprocess, pathlib
 
-    venv_py = pathlib.Path(".venv/Scripts/python.exe")
+    venv_py = pathlib.Path(sys.executable)
     info("Running: pytest module5/ --html=report.html --self-contained-html -v --timeout=120")
     print()
 
@@ -485,7 +485,7 @@ def step_summary():
 
     import pathlib, subprocess
 
-    venv_py = pathlib.Path(".venv/Scripts/python.exe")
+    venv_py = pathlib.Path(sys.executable)
     result = subprocess.run(
         [str(venv_py), "verify_deliverables.py"],
         capture_output=True, text=True,
