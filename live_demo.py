@@ -445,7 +445,16 @@ def step_pytest():
 def step_forensic():
     banner("STEP 8: Forensic Evidence Chain", Fore.YELLOW + Style.BRIGHT if C else "")
 
-    import pathlib
+    import pathlib, subprocess
+
+    info("Generating forensic evidence report...")
+    result = subprocess.run(
+        [sys.executable, "module6/forensic_logger.py"],
+        capture_output=True, text=True, timeout=60,
+        cwd=str(pathlib.Path.cwd()), errors="replace",
+    )
+    for line in result.stdout.strip().splitlines():
+        print(f"  {line}")
 
     evidence_path = pathlib.Path("evidence_report.json")
     sha_path      = pathlib.Path("sha256sums.txt")

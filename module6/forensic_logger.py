@@ -191,6 +191,9 @@ def build_evidence_report(disk_images: list = None,
         print("[M6] Running Volatility 3...")
         volatility_summary = run_volatility(Path(memory_dump))
         print(volatility_summary)
+    else:
+        volatility_summary = "[Forensics] No memory dump provided — skipped."
+        VOLATILITY_OUT.write_text(volatility_summary + "\n", encoding="utf-8")
 
     patch_lines = 0
     if PATCH_FILE.exists():
