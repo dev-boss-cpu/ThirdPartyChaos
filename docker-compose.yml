@@ -15,15 +15,13 @@ services:
       retries: 20
       start_period: 30s
     # ── NVIDIA GPU support ────────────────────────────────────────────────
-    # Uncomment the block below if your system has an NVIDIA GPU and the
-    # NVIDIA Container Toolkit is installed (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   # ── Pull llama3.1:8b once (skipped if already cached in the volume) ───────
   ollama-init:
@@ -34,7 +32,7 @@ services:
         condition: service_healthy
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    entrypoint: ["ollama", "pull", "llama3.2:1b"]
+    entrypoint: ["ollama", "pull", "llama3.1:8b"]
     restart: "no"
 
   # ── All Python services (proxy, mock SaaS, control API, healer, app) ─────
@@ -48,7 +46,6 @@ services:
         condition: service_completed_successfully
     environment:
       - OLLAMA_HOST=http://ollama:11434
-      - OLLAMA_MODEL=llama3.2:1b
     ports:
       - "3000:3000"    # Sample App
       - "8080:8080"    # Proxy Interceptor
