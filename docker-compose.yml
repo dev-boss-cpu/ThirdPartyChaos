@@ -34,7 +34,7 @@ services:
         condition: service_healthy
     environment:
       - OLLAMA_HOST=http://ollama:11434
-    entrypoint: ["ollama", "pull", "llama3.1:8b"]
+    entrypoint: ["ollama", "pull", "llama3.2:1b"]
     restart: "no"
 
   # ── All Python services (proxy, mock SaaS, control API, healer, app) ─────
@@ -48,6 +48,7 @@ services:
         condition: service_completed_successfully
     environment:
       - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2:1b
     ports:
       - "3000:3000"    # Sample App
       - "8080:8080"    # Proxy Interceptor

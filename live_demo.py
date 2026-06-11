@@ -355,12 +355,12 @@ def step_ai_repair():
     source  = "sample-app/main.py"
 
     info("Calling ai_repair.py — this invokes Ollama to generate a unified diff patch...")
-    info("Model: llama3.1:8b  |  Mode: dry-run (no file modification)")
-    info("NOTE: Running on GPU — please wait ~60 seconds...")
-    print()
-
     env = dict(__import__("os").environ)
-    env["OLLAMA_MODEL"] = "llama3.1:8b"
+    env.setdefault("OLLAMA_MODEL", "llama3.1:8b")
+    model_name = env["OLLAMA_MODEL"]
+    info(f"Model: {model_name}  |  Mode: dry-run (no file modification)")
+    info("NOTE: Please wait ~60 seconds...")
+    print()
 
     try:
         result = subprocess.run(
